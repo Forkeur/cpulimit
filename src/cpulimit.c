@@ -268,7 +268,7 @@ void limit_process(pid_t pid, double limit, int include_children)
 		{
 			struct list_node *next_node = node->next;
 			struct process *proc = (struct process*)(node->data);
-			if (kill(proc->pid,SIGCONT) != 0) {
+			if (proc->pid != cpulimit_pid && kill(proc->pid,SIGCONT) != 0) {
 				//process is dead, remove it from family
 				if (verbose) fprintf(stderr, "SIGCONT failed. Process %d dead!\n", proc->pid);
 				//remove process from group
@@ -297,7 +297,7 @@ void limit_process(pid_t pid, double limit, int include_children)
 			{
 				struct list_node *next_node = node->next;
 				struct process *proc = (struct process*)(node->data);
-				if (kill(proc->pid,SIGSTOP)!=0) {
+				if (proc->pid != cpulimit_pid && kill(proc->pid,SIGSTOP)!=0) {
 					//process is dead, remove it from family
 					if (verbose) fprintf(stderr, "SIGSTOP failed. Process %d dead!\n", proc->pid);
 					//remove process from group
