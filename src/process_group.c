@@ -24,6 +24,7 @@
 #include <limits.h>
 #include <sys/time.h>
 #include <signal.h>
+#include <errno.h>
 
 #include <assert.h>
 
@@ -61,7 +62,11 @@ int find_process_by_name(const char *process_name)
 	while (get_next_process(&it, &proc) != -1)
 	{
 		//process found
-		if (strncmp(basename(proc.command), process_name, strlen(process_name))==0 && kill(pid,SIGCONT)==0) {
+		if (strncmp(basename(proc.command), process_name, strlen(process_name))==0) {
+			if(kill(proc.pid,0) == -1 && errno == EPERM) {
+				//do not have permission
+				return -1;
+			}
 			//process is ok!
 			pid = proc.pid;
 			break;
@@ -141,9 +146,6 @@ void update_process_group(struct process_group *pgroup)
 
 	while (get_next_process(&it, &tmp_process) != -1)
 	{
-//		struct timeval t;
-//		gettimeofday(&t, NULL);
-//		printf("T=%ld.%ld PID=%d PPID=%d START=%d CPUTIME=%d\n", t.tv_sec, t.tv_usec, tmp_process.pid, tmp_process.ppid, tmp_process.starttime, tmp_process.cputime);
 		int hashkey = pid_hashfn(tmp_process.pid);
 		if (pgroup->proctable[hashkey] == NULL)
 		{
